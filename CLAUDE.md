@@ -119,3 +119,24 @@ Frontend: nextjs (3000)
 - User → UserProfile (1:1, auto-created on user creation)
 - User → Address (polymorphic via HasAddress trait)
 - User → Media (Spatie Media Library for avatars/documents)
+
+## Git Configuration
+
+**Repository:** `git@github-oaa:oaa-dev/laravel-react-project.git`
+
+This project uses a custom SSH host alias for the `oaa-dev` GitHub account. Add this to `~/.ssh/config`:
+
+```
+Host github-oaa
+  HostName github.com
+  User git
+  IdentityFile ~/.ssh/id_ed25519_oaa_dev
+  IdentitiesOnly yes
+```
+
+Then clone or set remote using:
+```bash
+git clone git@github-oaa:oaa-dev/laravel-react-project.git
+# or for existing repo:
+git remote set-url origin git@github-oaa:oaa-dev/laravel-react-project.git
+```
