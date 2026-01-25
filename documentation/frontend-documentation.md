@@ -265,11 +265,28 @@ function Profile() {
 ## Development Commands
 
 ```bash
+npm install             # Install dependencies (first time)
 npm run dev             # Start development server (localhost:3000)
 npm run build           # Create production build
 npm run start           # Start production server
 npm run lint            # Run ESLint
 ```
+
+## Running the Application
+
+1. **Start the backend first** (from `laravel-template-api/`):
+   ```bash
+   sail up -d
+   ```
+
+2. **Start the frontend** (from `my-next-app/`):
+   ```bash
+   npm run dev
+   ```
+
+3. **Access the application:**
+   - Frontend: http://localhost:3000
+   - API: http://localhost:8080/api/v1
 
 ## API Integration
 

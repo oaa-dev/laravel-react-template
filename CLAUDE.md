@@ -5,32 +5,38 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Project Overview
 
 This is a monorepo containing two applications:
-- **Backend**: `laravel-template-api/` - Laravel 12 REST API with OAuth2 authentication
-- **Frontend**: `my-next-app/` - Next.js 16 with React 19
+- **Backend**: `backend/` - Laravel 12 REST API with OAuth2 authentication
+- **Frontend**: `frontend/` - Next.js 16 with React 19
 
 ## Development Commands
 
-### Backend (laravel-template-api/)
+### Backend (backend/)
 
 ```bash
-composer setup          # First-time setup
-composer dev            # Run all services (PHP server, queue, logs, npm dev)
-composer test           # Run Pest tests
+docker compose up -d    # Start Docker containers (MySQL, Redis, etc.)
+docker compose exec app php artisan migrate    # Run migrations
+docker compose exec app php artisan test       # Run Pest tests
+docker compose exec app composer install       # Install dependencies
 ./vendor/bin/pint       # Code formatting (Laravel Pint)
 ```
 
-### Frontend (my-next-app/)
+**API URL:** http://localhost:8090/api/v1
+
+### Frontend (frontend/)
 
 ```bash
+npm install             # Install dependencies (first time)
 npm run dev             # Development server (localhost:3000)
 npm run build           # Production build
 npm run lint            # ESLint
 ```
 
+**Frontend URL:** http://localhost:3000
+
 ### Running Single Tests
 
 ```bash
-# From laravel-template-api/
+# From backend/
 php artisan test --filter=TestClassName
 php artisan test --filter=test_method_name
 php artisan test tests/Feature/Api/V1/AuthControllerTest.php
@@ -110,9 +116,15 @@ All prefixed with `/api/v1/`
 
 ## Docker Services
 
-Backend: laravel-app (PHP 8.3), laravel-web (Nginx:8080), mysql (3307), redis, rabbitmq, phpmyadmin (8081), mailpit
-
-Frontend: nextjs (3000)
+| Service | Port | Description |
+|---------|------|-------------|
+| API (Nginx) | 8090 | Laravel REST API |
+| phpMyAdmin | 8091 | Database management |
+| Mailpit | 8092 | Email testing UI |
+| RabbitMQ | 8093 | Message queue management |
+| MySQL | 3317 | Database |
+| Redis | 6389 | Cache |
+| RabbitMQ AMQP | 5682 | Message queue |
 
 ## Database
 
