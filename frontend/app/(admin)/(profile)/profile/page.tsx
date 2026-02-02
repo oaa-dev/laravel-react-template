@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useAuthStore } from '@/stores/authStore';
@@ -57,6 +57,7 @@ import {
 } from 'lucide-react';
 import { AxiosError } from 'axios';
 import { ApiError } from '@/types/api';
+import { AvatarCropDialog } from '@/components/avatar-crop-dialog';
 
 export default function ProfilePage() {
   const { user } = useAuthStore();
@@ -66,6 +67,11 @@ export default function ProfilePage() {
   const uploadAvatar = useUploadAvatar();
   const deleteAvatar = useDeleteAvatar();
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Avatar crop state
+  const [cropDialogOpen, setCropDialogOpen] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [uploadedAvatarPreview, setUploadedAvatarPreview] = useState<string | null>(null);
 
   const profile = profileData?.data;
 
@@ -175,18 +181,65 @@ export default function ProfilePage() {
     });
   };
 
-  const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      uploadAvatar.mutate(file);
+      const reader = new FileReader();
+      reader.onload = () => {
+        setSelectedImage(reader.result as string);
+        setCropDialogOpen(true);
+      };
+      reader.readAsDataURL(file);
     }
+    // Reset input so same file can be selected again
+    e.target.value = '';
   };
+
+  const handleCropComplete = useCallback((croppedImageBlob: Blob) => {
+    // Create preview URL immediately
+    const previewUrl = URL.createObjectURL(croppedImageBlob);
+
+    const file = new File([croppedImageBlob], 'avatar.jpg', {
+      type: 'image/jpeg',
+    });
+    uploadAvatar.mutate(file, {
+      onSuccess: () => {
+        // Clean up old preview if exists
+        if (uploadedAvatarPreview) {
+          URL.revokeObjectURL(uploadedAvatarPreview);
+        }
+        setUploadedAvatarPreview(previewUrl);
+        setCropDialogOpen(false);
+        setSelectedImage(null);
+      },
+      onError: () => {
+        // Clean up preview URL on error
+        URL.revokeObjectURL(previewUrl);
+      },
+    });
+  }, [uploadAvatar, uploadedAvatarPreview]);
 
   const handleAvatarDelete = () => {
-    deleteAvatar.mutate();
+    deleteAvatar.mutate(undefined, {
+      onSuccess: () => {
+        if (uploadedAvatarPreview) {
+          URL.revokeObjectURL(uploadedAvatarPreview);
+          setUploadedAvatarPreview(null);
+        }
+      },
+    });
   };
 
-  const avatarUrl = user?.avatar?.preview || user?.profile?.avatar?.preview || profile?.avatar?.preview;
+  // Cleanup preview URL on unmount
+  useEffect(() => {
+    return () => {
+      if (uploadedAvatarPreview) {
+        URL.revokeObjectURL(uploadedAvatarPreview);
+      }
+    };
+  }, [uploadedAvatarPreview]);
+
+  const avatarUrl = uploadedAvatarPreview || user?.avatar?.preview || user?.profile?.avatar?.preview || profile?.avatar?.preview;
 
   return (
     <div className="space-y-8">
@@ -267,7 +320,7 @@ export default function ProfilePage() {
                   ref={fileInputRef}
                   type="file"
                   accept="image/jpeg,image/png,image/webp"
-                  onChange={handleAvatarUpload}
+                  onChange={handleFileSelect}
                   className="hidden"
                 />
               </div>
@@ -648,6 +701,15 @@ export default function ProfilePage() {
           </Card>
         </div>
       </div>
+
+      {/* Avatar Crop Dialog */}
+      <AvatarCropDialog
+        open={cropDialogOpen}
+        onOpenChange={setCropDialogOpen}
+        imageSrc={selectedImage}
+        onCropComplete={handleCropComplete}
+        isUploading={uploadAvatar.isPending}
+      />
     </div>
   );
 }
