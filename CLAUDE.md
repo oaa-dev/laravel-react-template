@@ -58,8 +58,10 @@ Controllers → Services → Repositories → Models → Database
 - `app/Http/Controllers/Api/V1/` - API controllers (Auth, User, Profile)
 - `app/Services/` - Business logic with interface contracts
 - `app/Repositories/` - Data access layer with BaseRepository
-- `app/Http/Resources/Api/V1/` - JSON transformers
+- `app/Http/Resources/Api/V1/` - JSON transformers (output)
 - `app/Http/Requests/Api/V1/` - Form Request validation classes
+- `app/Data/` - Input DTOs (Spatie Laravel Data)
+- `app/Rules/` - Custom validation rules
 - `routes/api.php` - All API routes (v1 prefix)
 
 **Standard API Response Format:**
@@ -71,6 +73,90 @@ Controllers → Services → Repositories → Models → Database
   "meta": { "pagination": ... }
 }
 ```
+
+### Input DTOs (Data Transfer Objects)
+
+Type-safe data transfer from Controllers to Services using Spatie Laravel Data.
+
+**Design Principle:** One model = One DTO
+
+**Location:** `app/Data/`
+
+```php
+// Example: app/Data/UserData.php
+use Spatie\LaravelData\Data;
+use Spatie\LaravelData\Optional;
+
+class UserData extends Data
+{
+    public function __construct(
+        public string|Optional $name = new Optional(),
+        public string|Optional $email = new Optional(),
+        public string|Optional $password = new Optional(),
+        public array|Optional $roles = new Optional(),
+    ) {}
+}
+```
+
+**Usage in Controller:**
+```php
+$data = UserData::from($request->validated());
+$user = $this->userService->createUser($data);
+```
+
+**Usage in Service:**
+```php
+public function updateUser(int $id, UserData $data): User
+{
+    $updateData = collect($data->toArray())
+        ->reject(fn ($value) => $value instanceof Optional)
+        ->toArray();
+    // ...
+}
+```
+
+**Available DTOs:**
+- `UserData` - User create/update
+- `ProfileData` - Profile update (with nested AddressData)
+- `AddressData` - Address fields
+- `RoleData` - Role create/update
+- `ConversationData` - Messaging conversations
+
+### Image Configuration
+
+Centralized image upload configuration with custom validation rule.
+
+**Config:** `config/images.php`
+```php
+'avatar' => [
+    'mimes' => ['jpeg', 'png', 'webp'],
+    'max_size' => 5120,  // KB (5MB)
+    'min_width' => 100,
+    'min_height' => 100,
+    'max_width' => 4000,
+    'max_height' => 4000,
+    'recommendation' => 'Upload a square image...',
+],
+'document' => [
+    'mimes' => ['pdf', 'doc', 'docx'],
+    'max_size' => 10240,  // KB (10MB)
+    'recommendation' => 'Upload documents in PDF...',
+],
+```
+
+**Validation Rule:** `app/Rules/ImageRule.php`
+```php
+// In FormRequest
+public function rules(): array
+{
+    return [
+        'avatar' => ['required', ImageRule::avatar()],
+        'document' => ['required', ImageRule::document()],
+    ];
+}
+```
+
+**API Endpoint:** `GET /api/v1/config/images` - Returns image configuration (public, no auth required)
 
 ### Frontend - Next.js App Router
 
@@ -94,6 +180,7 @@ OAuth2 via Laravel Passport. Bearer token in Authorization header.
 
 **Backend:**
 - Laravel Passport - OAuth2
+- Spatie Laravel Data - Input DTOs
 - Spatie Media Library - File/avatar management
 - Spatie Query Builder - API filtering/sorting
 - L5-Swagger - OpenAPI docs at `/api/documentation`
@@ -113,6 +200,7 @@ All prefixed with `/api/v1/`
 - `GET /auth/me`, `PUT /auth/me`
 - `GET|POST /users`, `GET|PUT|DELETE /users/{id}`
 - `GET|PUT /profile`, `POST|DELETE /profile/avatar`
+- `GET /config/images` - Image upload configuration (public)
 
 ## Docker Services
 
