@@ -21,6 +21,7 @@ use OpenApi\Attributes as OA;
 #[OA\Tag(name: 'Users', description: 'User management endpoints')]
 #[OA\Tag(name: 'Profile', description: 'User profile management endpoints')]
 #[OA\Tag(name: 'Messaging', description: 'Real-time messaging between users')]
+#[OA\Tag(name: 'Config', description: 'Application configuration endpoints')]
 #[OA\Schema(
     schema: 'SuccessResponse',
     properties: [

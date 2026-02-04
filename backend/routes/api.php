@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\V1\AuthController;
+use App\Http\Controllers\Api\V1\ConfigController;
 use App\Http\Controllers\Api\V1\MessagingController;
 use App\Http\Controllers\Api\V1\NotificationController;
 use App\Http\Controllers\Api\V1\PermissionController;
@@ -14,6 +15,9 @@ Route::prefix('v1')->group(function () {
     // Public routes
     Route::post('auth/register', [AuthController::class, 'register']);
     Route::post('auth/login', [AuthController::class, 'login']);
+
+    // Config routes (public)
+    Route::get('config/images', [ConfigController::class, 'images']);
 
     // Protected routes
     Route::middleware('auth:api')->group(function () {

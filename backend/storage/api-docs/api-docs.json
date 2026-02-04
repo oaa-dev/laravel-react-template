@@ -370,6 +370,101 @@
                 ]
             }
         },
+        "/config/images": {
+            "get": {
+                "tags": [
+                    "Config"
+                ],
+                "summary": "Get image upload configuration",
+                "description": "Get the configuration settings for image uploads (avatar, documents, etc.)",
+                "operationId": "cb8160a98606075a0ecb750c3b554fa1",
+                "responses": {
+                    "200": {
+                        "description": "Configuration retrieved successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Configuration retrieved successfully"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "avatar": {
+                                                    "properties": {
+                                                        "mimes": {
+                                                            "type": "array",
+                                                            "items": {
+                                                                "type": "string"
+                                                            },
+                                                            "example": [
+                                                                "jpeg",
+                                                                "png",
+                                                                "webp"
+                                                            ]
+                                                        },
+                                                        "max_size": {
+                                                            "description": "Max size in KB",
+                                                            "type": "integer",
+                                                            "example": 5120
+                                                        },
+                                                        "min_width": {
+                                                            "type": "integer",
+                                                            "example": 100
+                                                        },
+                                                        "min_height": {
+                                                            "type": "integer",
+                                                            "example": 100
+                                                        },
+                                                        "max_width": {
+                                                            "type": "integer",
+                                                            "example": 4000
+                                                        },
+                                                        "max_height": {
+                                                            "type": "integer",
+                                                            "example": 4000
+                                                        }
+                                                    },
+                                                    "type": "object"
+                                                },
+                                                "document": {
+                                                    "properties": {
+                                                        "mimes": {
+                                                            "type": "array",
+                                                            "items": {
+                                                                "type": "string"
+                                                            },
+                                                            "example": [
+                                                                "pdf",
+                                                                "doc",
+                                                                "docx"
+                                                            ]
+                                                        },
+                                                        "max_size": {
+                                                            "description": "Max size in KB",
+                                                            "type": "integer",
+                                                            "example": 10240
+                                                        }
+                                                    },
+                                                    "type": "object"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/conversations": {
             "get": {
                 "tags": [
@@ -2981,6 +3076,10 @@
         {
             "name": "Messaging",
             "description": "Real-time messaging between users"
+        },
+        {
+            "name": "Config",
+            "description": "Application configuration endpoints"
         },
         {
             "name": "Notifications",
